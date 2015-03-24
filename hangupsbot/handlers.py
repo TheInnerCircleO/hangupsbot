@@ -1,7 +1,7 @@
 import logging, shlex, unicodedata, asyncio
 
 import hangups
-
+import re
 from hangupsbot.commands import command
 
 
@@ -11,6 +11,12 @@ class MessageHandler(object):
     def __init__(self, bot, bot_command='/bot'):
         self.bot = bot
         self.bot_command = bot_command
+
+    @staticmethod
+    def regex_parse_text(regex, text):
+        """Return True if regex matches"""
+        result = re.match(regex, text)
+        return result
 
     @staticmethod
     def word_in_text(word, text):
@@ -110,6 +116,6 @@ class MessageHandler(object):
         if autoreplies_list:
             for kwds, sentence in autoreplies_list:
                 for kw in kwds:
-                    if self.word_in_text(kw, event.text) or kw == "*":
+                    if self.regex_parse_text(kw, event.text):
                         self.bot.send_message(event.conv, sentence)
                         break
