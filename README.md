@@ -8,8 +8,21 @@ Requirements
 
 - Python >= 3.3
 - hangups (https://github.com/tdryer/hangups)
-- appdirs (https://github.com/ActiveState/appdirs)
-- asyncio (https://pypi.python.org/pypi/asyncio) for Python < 3.4
+
+Setup
+-----
+
+Install package `python-virtualenv`
+
+Make a virtual environment `virtualenv .venv`
+
+Install package `python-pip`
+
+Install hangupsbot dependency `pip3 install hangups`
+
+Install hangupsbot `python3 setup.py install`
+
+Run hangupsbot `hangupsbot`
 
 Usage
 -----
