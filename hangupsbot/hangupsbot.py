@@ -178,6 +178,17 @@ class HangupsBot(object):
             conversation.send_message(segments)
         ).add_done_callback(self._on_message_sent)
 
+    def parse_and_send_segments(self, conversation, text):
+        """Will parse out links to be clickable"""
+        # Ignore if the user hasn't typed a message.
+        if len(text) == 0:
+            return
+
+        segments = hangups.ChatMessageSegment.from_str(text)
+        asyncio.async(
+            conversation.send_message(segments)
+            ).add_done_callback(self._on_message_sent)
+
     def list_conversations(self):
         """List all active conversations"""
         convs = sorted(self._conv_list.get_all(),
