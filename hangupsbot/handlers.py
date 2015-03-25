@@ -61,7 +61,7 @@ class MessageHandler(object):
         # Test if command length is sufficient
         if len(line_args) < 2:
             self.bot.send_message(event.conv,
-                                  '{}: Co si bude pán ráčit?'.format(event.user.full_name))
+                                  '{}: Pardon?'.format(event.user.full_name))
             return
 
         # Test if user has permissions for running command
@@ -70,7 +70,7 @@ class MessageHandler(object):
             admins_list = self.bot.get_config_suboption(event.conv_id, 'admins')
             if event.user_id.chat_id not in admins_list:
                 self.bot.send_message(event.conv,
-                                      '{}: I\'m sorry, Dave. I\'m afraid I can\'t do that.'.format(event.user.full_name))
+                                      'I\'m sorry, {}. I\'m afraid I can\'t do that.'.format(event.user.full_name))
                 return
 
         # Run command

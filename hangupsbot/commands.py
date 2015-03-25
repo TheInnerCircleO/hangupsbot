@@ -52,14 +52,14 @@ command = CommandDispatcher()
 def unknown_command(bot, event, *args):
     """Unknown command handler"""
     bot.send_message(event.conv,
-                     '{}: Ja ne znaju, ne ponimaju!'.format(event.user.full_name))
+                     'English mother fucker. Do you speak it?')
 
 
 @command.register
 def help(bot, event, cmd=None, *args):
     """Help me, Obi-Wan Kenobi. You're my only hope."""
     if not cmd:
-        segments = [hangups.ChatMessageSegment('Podporované příkazy:', is_bold=True),
+        segments = [hangups.ChatMessageSegment('My available commands:', is_bold=True),
                     hangups.ChatMessageSegment('\n', hangups.SegmentType.LINE_BREAK),
                     hangups.ChatMessageSegment(', '.join(sorted(command.commands.keys())))]
     else:
@@ -90,7 +90,7 @@ def echo(bot, event, *args):
 @command.register
 def users(bot, event, *args):
     """Výpis všech uživatelů v aktuálním Hangoutu (včetně G+ účtů a emailů)"""
-    segments = [hangups.ChatMessageSegment('Seznam uživatelů (celkem {}):'.format(len(event.conv.users)),
+    segments = [hangups.ChatMessageSegment('Users in chat ({}):'.format(len(event.conv.users)),
                                            is_bold=True),
                 hangups.ChatMessageSegment('\n', hangups.SegmentType.LINE_BREAK)]
     for u in sorted(event.conv.users, key=lambda x: x.full_name.split()[-1]):
@@ -110,7 +110,7 @@ def users(bot, event, *args):
 def user(bot, event, username, *args):
     """Vyhledá uživatele podle jména"""
     username_lower = username.strip().lower()
-    segments = [hangups.ChatMessageSegment('Výsledky hledání uživatelů jménem "{}":'.format(username),
+    segments = [hangups.ChatMessageSegment('Here are the users I could find "{}":'.format(username),
                                            is_bold=True),
                 hangups.ChatMessageSegment('\n', hangups.SegmentType.LINE_BREAK)]
     for u in sorted(bot._user_list._user_dict.values(), key=lambda x: x.full_name.split()[-1]):
@@ -134,7 +134,7 @@ def user(bot, event, username, *args):
 def hangouts(bot, event, *args):
     """Výpis všech aktivních Hangoutů, v kterých řádí bot
         Vysvětlivky: c ... commands, f ... forwarding, a ... autoreplies"""
-    segments = [hangups.ChatMessageSegment('Seznam aktivních Hangoutů:', is_bold=True),
+    segments = [hangups.ChatMessageSegment('Hangous I am in:', is_bold=True),
                 hangups.ChatMessageSegment('\n', hangups.SegmentType.LINE_BREAK)]
     for c in bot.list_conversations():
         s = '{} [c: {:d}, f: {:d}, a: {:d}]'.format(get_conv_name(c, truncate=True),
@@ -167,7 +167,7 @@ def leave(bot, event, conversation=None, *args):
 
     for c in convs:
         yield from c.send_message([
-            hangups.ChatMessageSegment('I\'ll be back!')
+            hangups.ChatMessageSegment('I\'ll be back.')
         ])
         yield from bot._conv_list.delete_conversation(c.id_)
 
