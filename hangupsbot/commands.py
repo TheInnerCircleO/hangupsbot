@@ -262,5 +262,5 @@ def dilbert(bot, event, *args):
                 dilbert_date_format)
 
     dilbert_link = 'http://dilbert.com/{}'.format(dilbert_modifier)
-    message = 'Heres your fucking dilbert, {}'.format(dilbert_link)
+    message = "Here's your fucking dilbert, {}".format(dilbert_link)
     bot.parse_and_send_segments(event.conv, message)
