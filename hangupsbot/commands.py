@@ -6,6 +6,8 @@ from datetime import date as datetime
 from hangups.ui.utils import get_conv_name
 from hangupsbot.utils import text_to_segments
 
+from random import randint
+
 
 class CommandDispatcher(object):
     """Register commands and run them"""
@@ -269,3 +271,21 @@ def dilbert(bot, event, *args):
 def slap(bot, event, name):
     message = "/me slaps {} around a bit with a large black cock".format(name)
     bot.parse_and_send_segments(event.conv, message)
+
+@command.register
+def roll(bot, event, *args):
+    for arg in list(args):
+
+        i = 1
+        die = int(arg.split('d')[0])
+        sides  = int(arg.split('d')[1])
+        results = ''
+        total = 0
+
+        while (i <= die):
+            roll = randint(1, sides)
+            results += str(roll) if i == 1 else ', ' + str(roll)
+            total += roll
+            i += 1
+
+        bot.send_message(event.conv, 'Rolling {}: {} ({})'.format(arg, results, total))
