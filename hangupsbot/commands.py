@@ -267,5 +267,5 @@ def dilbert(bot, event, *args):
 
 @command.register
 define slap(bot, event, name):
-    message = "/me slaps {} around a bit with a large trout".format(name)
+    message = "/me slaps {} around a bit with a large black cock".format(name)
     bot.parse_and_send_segments(event.conv, message)
