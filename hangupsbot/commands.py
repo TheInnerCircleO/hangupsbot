@@ -264,3 +264,8 @@ def dilbert(bot, event, *args):
     dilbert_link = 'http://dilbert.com/{}'.format(dilbert_modifier)
     message = "Here's your fucking dilbert, {}".format(dilbert_link)
     bot.parse_and_send_segments(event.conv, message)
+
+@command.register
+define slap(bot, event, name):
+    message = "/me slaps {} around a bit with a large trout".format(name)
+    bot.parse_and_send_segments(event.conv, message)
