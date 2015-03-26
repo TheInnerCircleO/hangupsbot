@@ -179,10 +179,16 @@ def leave(bot, event, conversation=None, *args):
 def easteregg(bot, event, easteregg, eggcount=1, period=0.5, *args):
     """Starts combo Easter eggs (parameters: egg [number] [period]))
        Supported Easter Eggs: ponies, pitchforks, bikeshed, shydino"""
+    # Make a value to check against, don't want hours of spam in chat
+    spam_count = float(eggcount) * float(period)
+    if spam_count > 15:
+        eggcount = 1
+
     for i in range(int(eggcount)):
         yield from bot._client.sendeasteregg(event.conv_id, easteregg)
         if int(eggcount) > 1:
             yield from asyncio.sleep(float(period) + random.uniform(-0.1, 0.1))
+
 
 @command.register
 def spoof(bot, event, *args):
@@ -267,10 +273,12 @@ def dilbert(bot, event, *args):
     message = "Here's your fucking dilbert, {}".format(dilbert_link)
     bot.parse_and_send_segments(event.conv, message)
 
+
 @command.register
 def slap(bot, event, name):
     message = "/me slaps {} around a bit with a large black cock".format(name)
     bot.parse_and_send_segments(event.conv, message)
+
 
 @command.register
 def roll(bot, event, *args):
@@ -285,7 +293,7 @@ def roll(bot, event, *args):
 
         i = 1
         die = int(arg.split('d')[0])
-        sides  = int(arg.split('d')[1])
+        sides = int(arg.split('d')[1])
         results = ''
         total = 0
 
@@ -294,5 +302,5 @@ def roll(bot, event, *args):
             results += str(roll) if i == 1 else ', ' + str(roll)
             total += roll
             i += 1
-
-        bot.send_message(event.conv, 'Rolling {}: {} ({})'.format(arg, results, total))
+        message = 'Rolling {}: {} ({})'.format(arg, results, total)
+        bot.parse_and_send_segments(event.conv, message)
