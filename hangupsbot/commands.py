@@ -270,9 +270,6 @@ def dilbert(bot, event, *args):
 @command.register
 def slap(bot, event, name):
     message = "/me slaps {} around a bit with a large black cock".format(name)
-<<<<<<< HEAD
-    bot.send_message(event.conv, message)
-=======
     bot.parse_and_send_segments(event.conv, message)
 
 @command.register
@@ -299,4 +296,3 @@ def roll(bot, event, *args):
             i += 1
 
         bot.send_message(event.conv, 'Rolling {}: {} ({})'.format(arg, results, total))
->>>>>>> origin/master
