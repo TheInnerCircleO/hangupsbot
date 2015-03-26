@@ -55,8 +55,7 @@ command = CommandDispatcher()
 @command.register_unknown
 def unknown_command(bot, event, *args):
     """Unknown command handler"""
-    bot.send_message(event.conv,
-                     'English mother fucker. Do you speak it?')
+    bot.send_message(event.conv, 'English mother fucker. Do you speak it?')
 
 
 @command.register
@@ -81,19 +80,19 @@ def help(bot, event, cmd=None, *args):
 
 @command.register
 def ping(bot, event, *args):
-    """Zahrajem si ping pong!"""
+    """Zahrajem ping pong!"""
     bot.send_message(event.conv, 'pong')
 
 
 @command.register
 def echo(bot, event, *args):
-    """Pojďme se opičit!"""
+    """Let Ape!"""
     bot.send_message(event.conv, '{}'.format(' '.join(args)))
 
 
 @command.register
 def users(bot, event, *args):
-    """Výpis všech uživatelů v aktuálním Hangoutu (včetně G+ účtů a emailů)"""
+    """Listing all users in the current hangout (including G + accounts and emails)"""
     segments = [hangups.ChatMessageSegment('Users in chat ({}):'.format(len(event.conv.users)),
                                            is_bold=True),
                 hangups.ChatMessageSegment('\n', hangups.SegmentType.LINE_BREAK)]
@@ -112,7 +111,7 @@ def users(bot, event, *args):
 
 @command.register
 def user(bot, event, username, *args):
-    """Vyhledá uživatele podle jména"""
+    """Find people by name"""
     username_lower = username.strip().lower()
     segments = [hangups.ChatMessageSegment('Here are the users I could find "{}":'.format(username),
                                            is_bold=True),
@@ -136,8 +135,8 @@ def user(bot, event, username, *args):
 
 @command.register
 def hangouts(bot, event, *args):
-    """Výpis všech aktivních Hangoutů, v kterých řádí bot
-        Vysvětlivky: c ... commands, f ... forwarding, a ... autoreplies"""
+    """Listing all active hangouts in which battered shoes
+         Explanation: c ... commands, f ... forwarding, and ... autoreplies"""
     segments = [hangups.ChatMessageSegment('Hangous I am in:', is_bold=True),
                 hangups.ChatMessageSegment('\n', hangups.SegmentType.LINE_BREAK)]
     for c in bot.list_conversations():
@@ -153,13 +152,13 @@ def hangouts(bot, event, *args):
 
 @command.register
 def rename(bot, event, *args):
-    """Přejmenuje aktuální Hangout"""
+    """Renames the current Hangout"""
     yield from bot._client.setchatname(event.conv_id, ' '.join(args))
 
 
 @command.register
 def leave(bot, event, conversation=None, *args):
-    """Opustí aktuální nebo jiný specifikovaný Hangout"""
+    """Exits the current or other specified Hangout"""
     convs = []
     if not conversation:
         convs.append(event.conv)
@@ -178,7 +177,8 @@ def leave(bot, event, conversation=None, *args):
 
 @command.register
 def easteregg(bot, event, easteregg, eggcount=1, period=0.5, *args):
-    """Sends an easter egg like bikeshed or shydino to the chat."""
+    """Starts combo Easter eggs (parameters: egg [number] [period]))
+       Supported Easter Eggs: ponies, pitchforks, bikeshed, shydino"""
     # Make a value to check against, don't want hours of spam in chat
     spam_count = float(eggcount) * float(period)
     if spam_count > 15:
@@ -192,26 +192,26 @@ def easteregg(bot, event, easteregg, eggcount=1, period=0.5, *args):
 
 @command.register
 def spoof(bot, event, *args):
-    """Spoofne instanci IngressBota na určené koordináty"""
-    segments = [hangups.ChatMessageSegment('!!! POZOR !!!', is_bold=True),
+    """Spoofne IngressBota instance on the specified coordinates"""
+    segments = [hangups.ChatMessageSegment('!!! CAUTION !!!', is_bold=True),
                 hangups.ChatMessageSegment('\n', hangups.SegmentType.LINE_BREAK)]
-    segments.append(hangups.ChatMessageSegment('Uživatel {} ('.format(event.user.full_name)))
+    segments.append(hangups.ChatMessageSegment('User {} ('.format(event.user.full_name)))
     link = 'https://plus.google.com/u/0/{}/about'.format(event.user.id_.chat_id)
     segments.append(hangups.ChatMessageSegment(link, hangups.SegmentType.LINK,
                                                link_target=link))
-    segments.append(hangups.ChatMessageSegment(') byl právě reportován Nianticu za pokus o spoofing!'))
+    segments.append(hangups.ChatMessageSegment(') has just reported on Niantic for attempted spoofing!'))
     bot.send_message_segments(event.conv, segments)
 
 
 @command.register
 def reload(bot, event, *args):
-    """Znovu načte konfiguraci bota ze souboru"""
+    """Reloads the configuration of the boot file"""
     bot.config.load()
 
 
 @command.register
 def quit(bot, event, *args):
-    """Nech bota žít!"""
+    """Let shoe live!"""
     print('HangupsBot killed by user {} from conversation {}'.format(event.user.full_name,
                                                                      get_conv_name(event.conv, truncate=True)))
     yield from bot._client.disconnect()
@@ -219,8 +219,8 @@ def quit(bot, event, *args):
 
 @command.register
 def config(bot, event, cmd=None, *args):
-    """Zobrazí nebo upraví konfiguraci bota
-        Parametry: /bot config [get|set] [key] [subkey] [...] [value]"""
+    """Displays or modifies the configuration boot
+        Parameters: /bot config [get|set] [key] [subkey] [...] [value]"""
 
     if cmd == 'get' or cmd is None:
         config_args = list(args)
@@ -239,7 +239,7 @@ def config(bot, event, cmd=None, *args):
         return
 
     if value is None:
-        value = 'Parametr neexistuje!'
+        value = 'Parameter does not exist!'
 
     config_path = ' '.join(k for k in ['config'] + config_args)
     segments = [hangups.ChatMessageSegment('{}:'.format(config_path),
@@ -258,7 +258,7 @@ def _random_date(start, end, format):
 
 @command.register
 def dilbert(bot, event, *args):
-    """first dilbert 1989-04-16"""
+    """First dilbert 1989-04-16"""
     dilbert_modifier = ''
     for arg in list(args):
         if arg == 'random':
