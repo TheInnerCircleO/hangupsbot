@@ -365,7 +365,9 @@ def xkcd(bot, event, *args):
     xkcdObj = get_json('http://xkcd.com/info.0.json')
 
     if args:
-        if re.match('^\d*$', args[0]):
+        if args[0] == 'random':
+            xkcdObj = get_json('http://xkcd.com/%s/info.0.json' % randint(1, xkcdObj['num']))
+        elif re.match('^\d*$', args[0]):
             if int(args[0]) <= xkcdObj['num'] and int(args[0]) >= 1:
                 xkcdObj = get_json('http://xkcd.com/%s/info.0.json' % args[0])
             else:
