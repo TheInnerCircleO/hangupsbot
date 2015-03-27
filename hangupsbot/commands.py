@@ -358,3 +358,25 @@ def thoughts(bot, event, *args):
     seed = ' '.join(args)
     result = get_topic(seed)
     bot.parse_and_send_segments(event.conv, result)
+
+@command.register
+def xkcd(bot, event, *args):
+
+    xkcdObj = get_json('http://xkcd.com/info.0.json')
+
+    if args:
+        if args[0] == 'random':
+            xkcdObj = get_json('http://xkcd.com/%s/info.0.json' % randint(1, xkcdObj['num']))
+        elif re.match('^\d*$', args[0]):
+            if int(args[0]) <= xkcdObj['num'] and int(args[0]) >= 1:
+                xkcdObj = get_json('http://xkcd.com/%s/info.0.json' % args[0])
+            else:
+                bot.parse_and_send_segments(event.conv, 'ERROR: Comic number out of range')
+                return
+        else:
+            bot.parse_and_send_segments(event.conv, 'ERROR: Invalid comic number')
+            return
+
+    text = '{}: http://xkcd.com/{}'.format(xkcdObj['safe_title'], xkcdObj['num'])
+
+    bot.parse_and_send_segments(event.conv, text)
