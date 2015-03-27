@@ -307,34 +307,52 @@ def roll(bot, event, *args):
         bot.parse_and_send_segments(event.conv, message)
 
 
-def get_topic(seed):
-    #Safe it
-    re.sub(r'\W+', '', seed)
-    url = 'http://www.reddit.com/search.json?q=%s' % seed
+def get_json(url):
+    """
+    TODO: Make this act sane when bad status_code or an Exception is thrown
+    Grabs json from a URL and returns a python dict
+    """
     headers = {'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 5.1; it; \
                rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11'}
 
     json_result = requests.get(url, headers=headers)
-
     if json_result.status_code == 200:
         try:
             obj_result = json.loads(json_result.text)
-            available_results = len(obj_result['data']['children'])-1
-            index_result = min([available_results,5])
-            result_index = randint(0, index_result)
-            rerep = re.compile(re.escape('reddit'), re.IGNORECASE)
-            line = rerep.sub('The Inner Circle',
-                obj_result['data']['children'][result_index]['data']['title'])
-            return line
+            return obj_result
         except Exception as e:
-            return "Hmm."
+            return e
     else:
-        return "Hmmm."
+        return json_result.status_code
+
+def get_topic(seed):
+    #Safe it
+    re.sub(r'\W+', '', seed)
+    url = 'http://www.reddit.com/search.json?q=%s' % seed
+    obj_result = get_json(url)
+
+    obj_result = json.loads(json_result.text)
+    available_results = len(obj_result['data']['children'])-1
+    index_result = min([available_results,5])
+    result_index = randint(0, index_result)
+    rerep = re.compile(re.escape('reddit'), re.IGNORECASE)
+    line = rerep.sub('The Inner Circle',
+        obj_result['data']['children'][result_index]['data']['title'])
+    return line
 
 
 @command.register
-def thoughts(bot, event, *args):
+def btc_price(bot, event, *args):
+    """
+    /bot btc
+    displays current btc on BTC-e
+    """
+    btce_json = get_json('http://btc-e.com/api/3/ticker/btc_usd')
+    result = 'BTC/USD: ' + str(btce_json['btc_usd']['avg'])
+    bot.parse_and_send_segments(event.conv, result)
 
+@command.register
+def thoughts(bot, event, *args):
     seed = ' '.join(args)
     result = get_topic(seed)
     bot.parse_and_send_segments(event.conv, result)
