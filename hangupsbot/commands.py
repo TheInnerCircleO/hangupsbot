@@ -8,6 +8,7 @@ from hangupsbot.utils import text_to_segments
 
 from random import randint
 import re
+import requests
 
 
 class CommandDispatcher(object):
@@ -304,3 +305,36 @@ def roll(bot, event, *args):
             i += 1
         message = 'Rolling {}: {} ({})'.format(arg, results, total)
         bot.parse_and_send_segments(event.conv, message)
+
+
+def get_topic(seed):
+    #Safe it
+    re.sub(r'\W+', '', seed)
+    url = 'http://www.reddit.com/search.json?q=%s' % seed
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 5.1; it; \
+               rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11'}
+
+    json_result = requests.get(url, headers=headers)
+
+    if json_result.status_code == 200:
+        try:
+            obj_result = json.loads(json_result.text)
+            available_results = len(obj_result['data']['children'])-1
+            index_result = min([available_results,5])
+            result_index = randint(0, index_result)
+            rerep = re.compile(re.escape('reddit'), re.IGNORECASE)
+            line = rerep.sub('The Inner Circle',
+                obj_result['data']['children'][result_index]['data']['title'])
+            return line
+        except Exception as e:
+            return "Hmm."
+    else:
+        return "Hmmm."
+
+
+@command.register
+def thoughts(bot, event, *args):
+
+    seed = ' '.join(args)
+    result = get_topic(seed)
+    bot.parse_and_send_segments(event.conv, result)
