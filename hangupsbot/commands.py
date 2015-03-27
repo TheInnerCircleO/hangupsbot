@@ -329,16 +329,18 @@ def get_topic(seed):
     #Safe it
     re.sub(r'\W+', '', seed)
     url = 'http://www.reddit.com/search.json?q=%s' % seed
-    obj_result = get_json(url)
 
-    obj_result = json.loads(json_result.text)
-    available_results = len(obj_result['data']['children'])-1
-    index_result = min([available_results,5])
-    result_index = randint(0, index_result)
-    rerep = re.compile(re.escape('reddit'), re.IGNORECASE)
-    line = rerep.sub('The Inner Circle',
-        obj_result['data']['children'][result_index]['data']['title'])
-    return line
+    try:
+        obj_result = get_json(url)
+        available_results = len(obj_result['data']['children'])-1
+        index_result = min([available_results,5])
+        result_index = randint(0, index_result)
+        rerep = re.compile(re.escape('reddit'), re.IGNORECASE)
+        line = rerep.sub('The Inner Circle',
+            obj_result['data']['children'][result_index]['data']['title'])
+        return line
+    except Exception as e:
+        return "Hmmm."
 
 
 @command.register
