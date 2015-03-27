@@ -342,7 +342,7 @@ def get_topic(seed):
 
 
 @command.register
-def btc_price(bot, event, *args):
+def btc(bot, event, *args):
     """
     /bot btc
     displays current btc on BTC-e
