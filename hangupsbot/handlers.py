@@ -1,11 +1,15 @@
-import logging, shlex, unicodedata, asyncio
-
+import asyncio
 import hangups
+import logging
 import re
+import shlex
+import unicodedata
+
 from hangupsbot.commands import command
 
 
 class MessageHandler(object):
+
     """Handle Hangups conversation events"""
 
     def __init__(self, bot, bot_command='/bot'):
@@ -21,9 +25,18 @@ class MessageHandler(object):
     @staticmethod
     def word_in_text(word, text):
         """Return True if word is in text"""
-        # Transliterate unicode characters to ASCII and make everything lowercase
-        word = unicodedata.normalize('NFKD', word).encode('ascii', 'ignore').decode().lower()
-        text = unicodedata.normalize('NFKD', text).encode('ascii', 'ignore').decode().lower()
+        # Transliterate unicode characters to ASCII
+        # and make everything lowercase
+        word = unicodedata.normalize(
+            'NFKD',
+            word).encode(
+                'ascii',
+                'ignore').decode().lower()
+        text = unicodedata.normalize(
+            'NFKD',
+            text).encode(
+                'ascii',
+                'ignore').decode().lower()
 
         # Replace delimiters in text with whitespace
         for delim in '.,:;!?':
@@ -52,7 +65,10 @@ class MessageHandler(object):
     def handle_command(self, event):
         """Handle command messages"""
         # Test if command handling is enabled
-        if not self.bot.get_config_suboption(event.conv_id, 'commands_enabled'):
+        commands_enabled = self.bot.get_config_suboption(
+            event.conv_id,
+            'commands_enabled')
+        if not commands_enabled:
             return
 
         # Parse message
@@ -60,17 +76,25 @@ class MessageHandler(object):
 
         # Test if command length is sufficient
         if len(line_args) < 2:
-            self.bot.send_message(event.conv,
-                                  '{}: Pardon?'.format(event.user.full_name))
+            self.bot.send_message(
+                event.conv,
+                '{}: Pardon?'.format(event.user.full_name))
             return
 
         # Test if user has permissions for running command
-        commands_admin_list = self.bot.get_config_suboption(event.conv_id, 'commands_admin')
+        commands_admin_list = self.bot.get_config_suboption(
+            event.conv_id,
+            'commands_admin')
+
         if commands_admin_list and line_args[1].lower() in commands_admin_list:
-            admins_list = self.bot.get_config_suboption(event.conv_id, 'admins')
+            admins_list = self.bot.get_config_suboption(
+                event.conv_id,
+                'admins')
             if event.user_id.chat_id not in admins_list:
-                self.bot.send_message(event.conv,
-                                      'I\'m sorry, {}. I\'m afraid I can\'t do that.'.format(event.user.full_name))
+                self.bot.send_message(
+                    event.conv,
+                    'I\'m sorry, {}. I\'m afraid I can\'t do that.'.format(
+                        event.user.full_name))
                 return
 
         # Run command
@@ -80,10 +104,15 @@ class MessageHandler(object):
     def handle_forward(self, event):
         """Handle message forwarding"""
         # Test if message forwarding is enabled
-        if not self.bot.get_config_suboption(event.conv_id, 'forwarding_enabled'):
+        forwarding_enabled = self.bot.get_config_suboption(
+            event.conv_id,
+            'forwarding_enabled')
+        if not forwarding_enabled:
             return
 
-        forward_to_list = self.bot.get_config_suboption(event.conv_id, 'forward_to')
+        forward_to_list = self.bot.get_config_suboption(
+            event.conv_id,
+            'forward_to')
         if forward_to_list:
             for dst in forward_to_list:
                 try:
@@ -92,32 +121,55 @@ class MessageHandler(object):
                     continue
 
                 # Prepend forwarded message with name of sender
-                link = 'https://plus.google.com/u/0/{}/about'.format(event.user_id.chat_id)
-                segments = [hangups.ChatMessageSegment(event.user.full_name, hangups.SegmentType.LINK,
-                                                       link_target=link, is_bold=True),
-                            hangups.ChatMessageSegment(': ', is_bold=True)]
+                link = 'https://plus.google.com/u/0/{}/about'.format(
+                    event.user_id.chat_id)
+                segments = [
+                    hangups.ChatMessageSegment(
+                        event.user.full_name,
+                        hangups.SegmentType.LINK,
+                        link_target=link, is_bold=True),
+                    hangups.ChatMessageSegment(
+                        ': ',
+                        is_bold=True)]
+
                 # Copy original message segments
                 segments.extend(event.conv_event.segments)
+
                 # Append links to attachments (G+ photos) to forwarded message
                 if event.conv_event.attachments:
-                    segments.append(hangups.ChatMessageSegment('\n', hangups.SegmentType.LINE_BREAK))
-                    segments.extend([hangups.ChatMessageSegment(link, hangups.SegmentType.LINK, link_target=link)
-                                     for link in event.conv_event.attachments])
+                    segments.append(
+                        hangups.ChatMessageSegment(
+                            '\n',
+                            hangups.SegmentType.LINE_BREAK))
+
+                    seg_list = []
+                    for link in event.conv_event.attachments:
+                        seg_list.append(
+                            hangups.ChatMessageSegment(
+                                link,
+                                hangups.SegmentType.LINK,
+                                link_target=link))
+
+                    segments.extend(seg_list)
+
                 self.bot.send_message_segments(conv, segments)
 
     @asyncio.coroutine
     def handle_autoreply(self, event):
         """Handle autoreplies to keywords in messages"""
         # Test if autoreplies are enabled
-        if not self.bot.get_config_suboption(event.conv_id, 'autoreplies_enabled'):
+        autoreplies_enabled = self.bot.get_config_suboption(
+            event.conv_id,
+            'autoreplies_enabled')
+        if not autoreplies_enabled:
             return
 
-        autoreplies_list = self.bot.get_config_suboption(event.conv_id, 'autoreplies')
+        autoreplies_list = self.bot.get_config_suboption(
+            event.conv_id,
+            'autoreplies')
         if autoreplies_list:
             for kwds, sentence in autoreplies_list:
                 for kw in kwds:
-                    # if self.word_in_text(kw, event.text) or kw == "*":
                     if self.regex_parse_text(kw, event.text):
-                        # self.bot.send_message(event.conv, sentence)
                         self.bot.parse_and_send_segments(event.conv, sentence)
                         break
