@@ -448,6 +448,26 @@ def get_topic(seed):
 
 
 @command.register
+def stock(bot, event, *args):
+    """
+    /bot stock ticker1 tickerN
+    displays current price for tickers
+    """
+    try:
+        tickers = ','.join(list(args))
+        raw_data = requests.get(
+            'http://finance.google.com/finance/info?client=ig&q=' +
+            tickers)
+        # Cant use get_json because of 3 invalid chars
+        data = json.loads(raw_data.text[3:])
+        result = '\n'.join([i['t'] + ": " + i['l'] for i in data])
+    except:
+        result = "Dankest memes cannot be delivered"
+
+    bot.parse_and_send_segments(event.conv, result)
+
+
+@command.register
 def btc(bot, event, *args):
     """
     /bot btc
