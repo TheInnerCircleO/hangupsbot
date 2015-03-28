@@ -5,3 +5,5 @@ hangups
 purplex
 aiohttp
 build/
+.tox/
+*.egg-info/
