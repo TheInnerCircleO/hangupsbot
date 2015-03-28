@@ -342,6 +342,23 @@ def get_topic(seed):
     except Exception as e:
         return "Hmmm."
 
+@command.register
+def stock(bot, event, *args):
+    """
+    /bot stock ticker1 tickerN
+    displays current price for tickers
+    """
+    try:
+        tickers = ','.join(list(args))
+        raw_data = requests.get('http://finance.google.com/finance/info?client=ig&q=' + tickers)
+        data = json.loads(raw_data.text[3:]) # Cant use get_json because of 3 invalid chars
+        result = '\n'.join([ i['t'] + ": " + i['l'] for i in b ])
+    except Exception as e:
+        result = "Dankest memes cannot be delivered"
+
+    #result = str(btce_json['btc_usd']['avg'])
+    bot.parse_and_send_segments(event.conv, result)
+
 
 @command.register
 def btc(bot, event, *args):
