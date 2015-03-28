@@ -1,20 +1,30 @@
 #!/usr/bin/env python
-import os, sys, argparse, logging, shutil, asyncio, time, signal
-
 import appdirs
+import argparse
+import asyncio
 import hangups
+
+import logging
+import os
+import shutil
+import signal
+import sys
+import time
+
 from hangups.ui.utils import get_conv_name
-
-import hangupsbot.config
-import hangupsbot.handlers
-
+from hangupsbot import config as hangupsbot_config
+from hangupsbot import handlers as hangupsbot_handlers
 
 __version__ = '1.2'
 LOG_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 
 
 class ConversationEvent(object):
-    """Cenversation event"""
+
+    """
+    Cenversation event
+    """
+
     def __init__(self, bot, conv_event):
         self.conv_event = conv_event
         self.conv_id = conv_event.conversation_id
@@ -22,21 +32,43 @@ class ConversationEvent(object):
         self.user_id = conv_event.user_id
         self.user = self.conv.get_user(self.user_id)
         self.timestamp = conv_event.timestamp
-        self.text = conv_event.text.strip() if isinstance(conv_event, hangups.ChatMessageEvent) else ''
+
+        if isinstance(conv_event, hangups.ChatMessageEvent):
+            self.text = conv_event.text.strip()
+        else:
+            self.text = ''
 
     def print_debug(self):
         """Print informations about conversation event"""
-        print('Conversation ID: {}'.format(self.conv_id))
-        print('Conversation name: {}'.format(get_conv_name(self.conv, truncate=True)))
-        print('User ID: {}'.format(self.user_id))
-        print('User name: {}'.format(self.user.full_name))
-        print('Timestamp: {}'.format(self.timestamp.astimezone(tz=None).strftime('%Y-%m-%d %H:%M:%S')))
-        print('Text: {}'.format(self.text))
-        print()
+        # TODO: real logging
+        print('Conversation ID: {}'.format(
+            self.conv_id))
+
+        print('Conversation name: {}'.format(
+            get_conv_name(
+                self.conv,
+                truncate=True)))
+
+        print('User ID: {}'.format(
+            self.user_id))
+
+        print('User name: {}'.format(
+            self.user.full_name))
+
+        print('Timestamp: {}'.format(
+            self.timestamp.astimezone(
+                tz=None).strftime('%Y-%m-%d %H:%M:%S')))
+
+        print('Text: {}\n'.format(
+            self.text))
 
 
 class HangupsBot(object):
-    """Hangouts bot listening on all conversations"""
+
+    """
+    Hangouts bot listening on all conversations
+    """
+
     def __init__(self, cookies_path, config_path, max_retries=5):
         self._client = None
         self._cookies_path = cookies_path
@@ -48,7 +80,7 @@ class HangupsBot(object):
         self._message_handler = None  # MessageHandler
 
         # Load config file
-        self.config = hangupsbot.config.Config(config_path)
+        self.config = hangupsbot_config.Config(config_path)
 
         # Handle signals on Unix
         # (add_signal_handler is not implemented on Windows)
@@ -78,19 +110,24 @@ class HangupsBot(object):
                 try:
                     # Create Hangups client
                     self._client = hangups.Client(cookies)
-                    self._client.on_connect.add_observer(self._on_connect)
-                    self._client.on_disconnect.add_observer(self._on_disconnect)
+                    self._client.on_connect.add_observer(
+                        self._on_connect)
+                    self._client.on_disconnect.add_observer(
+                        self._on_disconnect)
 
                     # Start asyncio event loop and connect to Hangouts
                     # If we are forcefully disconnected, try connecting again
                     loop = asyncio.get_event_loop()
                     loop.run_until_complete(self._client.connect())
                     sys.exit(0)
+
                 except Exception as e:
                     print('Client unexpectedly disconnected:\n{}'.format(e))
                     print('Waiting {} seconds...'.format(5 + retry * 5))
                     time.sleep(5 + retry * 5)
-                    print('Trying to connect again (try {} of {})...'.format(retry + 1, self._max_retries))
+                    print('Trying to connect again (try {} of {})...'.format(
+                        retry + 1,
+                        self._max_retries))
             print('Maximum number of retries reached! Exiting...')
         sys.exit(1)
 
@@ -114,7 +151,10 @@ class HangupsBot(object):
             return
 
         # Test if watching for membership changes is enabled
-        if not self.get_config_suboption(event.conv_id, 'membership_watching_enabled'):
+        membership_watching_enabled = self.get_config_suboption(
+            event.conv_id,
+            'membership_watching_enabled')
+        if not membership_watching_enabled:
             return
 
         # Generate list of added or removed users
@@ -127,23 +167,40 @@ class HangupsBot(object):
             # Test if user who added new participants is admin
             admins_list = self.get_config_suboption(event.conv_id, 'admins')
             if event.user_id.chat_id in admins_list:
-                self.send_message(event.conv,
-                                  '{}: Ahoj, {} mezi nás!'.format(names,
-                                                                  'vítejte' if len(event_users) > 1 else 'vítej'))
+                self.send_message(
+                    event.conv,
+                    '{}: Ahoj, {} mezi nás!'.format(
+                        names,
+                        'vítejte' if len(event_users) > 1 else 'vítej'))
             else:
-                segments = [hangups.ChatMessageSegment('!!! POZOR !!!', is_bold=True),
-                            hangups.ChatMessageSegment('\n', hangups.SegmentType.LINE_BREAK),
-                            hangups.ChatMessageSegment('{} neoprávněně přidal do tohoto Hangoutu uživatele {}!'.format(
-                                                       event.user.full_name, names)),
-                            hangups.ChatMessageSegment('\n', hangups.SegmentType.LINE_BREAK),
-                            hangups.ChatMessageSegment('\n', hangups.SegmentType.LINE_BREAK),
-                            hangups.ChatMessageSegment('{}: Opusťte prosím urychleně tento Hangout!'.format(names))]
+                segments = [
+                    hangups.ChatMessageSegment(
+                        '!!! POZOR !!!',
+                        is_bold=True),
+                    hangups.ChatMessageSegment(
+                        '\n',
+                        hangups.SegmentType.LINE_BREAK),
+                    hangups.ChatMessageSegment(
+                        '{} mmph mmph mmmmmmmph! {}!'.format(
+                            event.user.full_name,
+                            names)),
+                    hangups.ChatMessageSegment(
+                        '\n',
+                        hangups.SegmentType.LINE_BREAK),
+                    hangups.ChatMessageSegment(
+                        '\n',
+                        hangups.SegmentType.LINE_BREAK),
+                    hangups.ChatMessageSegment(
+                        '{}: whole team is dead!'.format(
+                            names))]
                 self.send_message_segments(event.conv, segments)
         # LEAVE
         else:
-            self.send_message(event.conv,
-                              '{} nám {} košem :-( Řekněte pá pá!'.format(names,
-                                                                          'dali' if len(event_users) > 1 else 'dal'))
+            self.send_message(
+                event.conv,
+                '{} nám {} košem :-( no pá pá, no!'.format(
+                    names,
+                    'grammars' if len(event_users) > 1 else 'grammar'))
 
     def handle_rename(self, conv_event):
         """Handle conversation rename"""
@@ -154,18 +211,28 @@ class HangupsBot(object):
             return
 
         # Test if watching for conversation rename is enabled
-        if not self.get_config_suboption(event.conv_id, 'rename_watching_enabled'):
+        rename_watching_enabled = self.get_config_suboption(
+            event.conv_id,
+            'rename_watching_enabled')
+        if not rename_watching_enabled:
             return
 
         # Only print renames for now...
         if event.conv_event.new_name == '':
-            print('{} cleared the conversation name'.format(event.user.first_name))
+            print(
+                '{} cleared the conversation name'.format(
+                    event.user.first_name))
         else:
-            print('{} renamed the conversation to {}'.format(event.user.first_name, event.conv_event.new_name))
+            print(
+                '{} renamed the conversation to {}'.format(
+                    event.user.first_name,
+                    event.conv_event.new_name))
 
     def send_message(self, conversation, text):
         """"Send simple chat message"""
-        self.send_message_segments(conversation, [hangups.ChatMessageSegment(text)])
+        self.send_message_segments(
+            conversation,
+            [hangups.ChatMessageSegment(text)])
 
     def send_message_segments(self, conversation, segments):
         """Send chat message segments"""
@@ -196,7 +263,11 @@ class HangupsBot(object):
         return convs
 
     def get_config_suboption(self, conv_id, option):
-        """Get config suboption for conversation (or global option if not defined)"""
+        """
+        Get config suboption for conversation
+        (or global option if not defined)
+        """
+
         try:
             suboption = self.config['conversations'][conv_id][option]
         except KeyError:
@@ -216,17 +287,22 @@ class HangupsBot(object):
     def _on_connect(self, initial_data):
         """Handle connecting for the first time"""
         print('Connected!')
-        self._message_handler = hangupsbot.handlers.MessageHandler(self)
+        self._message_handler = hangupsbot_handlers.MessageHandler(self)
 
-        self._user_list = hangups.UserList(self._client,
-                                           initial_data.self_entity,
-                                           initial_data.entities,
-                                           initial_data.conversation_participants)
-        self._conv_list = hangups.ConversationList(self._client,
-                                                   initial_data.conversation_states,
-                                                   self._user_list,
-                                                   initial_data.sync_timestamp)
-        self._conv_list.on_event.add_observer(self._on_event)
+        self._user_list = hangups.UserList(
+            self._client,
+            initial_data.self_entity,
+            initial_data.entities,
+            initial_data.conversation_participants)
+
+        self._conv_list = hangups.ConversationList(
+            self._client,
+            initial_data.conversation_states,
+            self._user_list,
+            initial_data.sync_timestamp)
+
+        self._conv_list.on_event.add_observer(
+            self._on_event)
 
         print('Conversations:')
         for c in self.list_conversations():
@@ -256,16 +332,26 @@ def main():
     default_config_path = os.path.join(dirs.user_data_dir, 'config.json')
 
     # Configure argument parser
-    parser = argparse.ArgumentParser(prog='hangupsbot',
-                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('-d', '--debug', action='store_true',
-                        help='log detailed debugging messages')
-    parser.add_argument('--log', default=default_log_path,
-                        help='log file path')
-    parser.add_argument('--cookies', default=default_cookies_path,
-                        help='cookie storage path')
-    parser.add_argument('--config', default=default_config_path,
-                        help='config storage path')
+    parser = argparse.ArgumentParser(
+        prog='hangupsbot',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument(
+        '-d', '--debug',
+        action='store_true',
+        help='log detailed debugging messages')
+    parser.add_argument(
+        '--log',
+        default=default_log_path,
+        help='log file path')
+    parser.add_argument(
+        '--cookies',
+        default=default_cookies_path,
+        help='cookie storage path')
+    parser.add_argument(
+        '--config',
+        default=default_config_path,
+        help='config storage path')
+
     args = parser.parse_args()
 
     # Create all necessary directories.
@@ -280,14 +366,22 @@ def main():
     # If there is no config file in user data directory, copy default one there
     if not os.path.isfile(args.config):
         try:
-            shutil.copy(os.path.abspath(os.path.join(os.path.dirname(__file__), 'config.json')),
-                        args.config)
+            shutil.copy(
+                os.path.abspath(
+                    os.path.join(
+                        os.path.dirname(__file__),
+                        'config.json')),
+                args.config)
         except (OSError, IOError) as e:
             sys.exit('Failed to copy default config file: {}'.format(e))
 
     # Configure logging
     log_level = logging.DEBUG if args.debug else logging.WARNING
-    logging.basicConfig(filename=args.log, level=log_level, format=LOG_FORMAT)
+    logging.basicConfig(
+        filename=args.log,
+        level=log_level,
+        format=LOG_FORMAT)
+
     # asyncio's debugging logs are VERY noisy, so adjust the log level
     logging.getLogger('asyncio').setLevel(logging.WARNING)
 
