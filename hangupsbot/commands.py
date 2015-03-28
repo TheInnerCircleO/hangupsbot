@@ -386,6 +386,8 @@ def slap(bot, event, name):
 @command.register
 def roll(bot, event, *args):
 
+    segments = list()
+
     for arg in list(args):
 
         validArg = re.match('[0-9]*d[0-9]*', arg)
@@ -394,19 +396,36 @@ def roll(bot, event, *args):
             bot.send_message(event.conv, 'Invalid dice string: {}'.format(arg))
             continue
 
-        i = 1
-        die = int(arg.split('d')[0])
-        sides = int(arg.split('d')[1])
-        results = ''
+        segments.append(
+            hangups.ChatMessageSegment(
+                'Rolling {}: '.format(arg),
+                is_bold=True
+            )
+        )
+
         total = 0
 
-        while (i <= die):
+        die = int(arg.split('d')[0])
+        sides = int(arg.split('d')[1])
+
+        for i in range(1, die + 1):
+
             roll = randint(1, sides)
-            results += str(roll) if i == 1 else ', ' + str(roll)
+
+            if i != 1:
+                segments.append(hangups.ChatMessageSegment(', '))
+
+            segments.append(hangups.ChatMessageSegment(str(roll)))
+
             total += roll
-            i += 1
-        message = 'Rolling {}: {} ({})'.format(arg, results, total)
-        bot.parse_and_send_segments(event.conv, message)
+
+        segments.append(hangups.ChatMessageSegment(' [{}]'.format(total)))
+
+        segments.append(
+            hangups.ChatMessageSegment('\n', hangups.SegmentType.LINE_BREAK)
+        )
+
+    bot.send_message_segments(event.conv, segments)
 
 
 def get_json(url):
