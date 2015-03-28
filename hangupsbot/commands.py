@@ -518,10 +518,13 @@ def xkcd(bot, event, *args):
 
     bot.parse_and_send_segments(event.conv, text)
 
+
 @command.register
 def prs(bot, event, *args):
 
-    prs = get_json('https://api.github.com/repos/TheInnerCircleO/hangupsbot/pulls')
+    prs = get_json(
+        'https://api.github.com/repos/TheInnerCircleO/hangupsbot/pulls'
+    )
 
     if not prs:
         bot.parse_and_send_segments(event.conv, 'No open pull requests')
@@ -532,11 +535,34 @@ def prs(bot, event, *args):
     ]
 
     for pr in prs:
-        segments.append(hangups.ChatMessageSegment('\n', hangups.SegmentType.LINE_BREAK))
-        segments.append(hangups.ChatMessageSegment('\n', hangups.SegmentType.LINE_BREAK))
-        segments.append(hangups.ChatMessageSegment('[{}] '.format(pr['number'])))
-        segments.append(hangups.ChatMessageSegment(pr['title'], hangups.SegmentType.LINK, link_target=pr['html_url']))
+        segments.append(
+            hangups.ChatMessageSegment('\n', hangups.SegmentType.LINE_BREAK)
+        )
+
+        segments.append(
+            hangups.ChatMessageSegment('\n', hangups.SegmentType.LINE_BREAK)
+        )
+
+        segments.append(
+            hangups.ChatMessageSegment('[{}] '.format(pr['number']))
+        )
+
+        segments.append(
+            hangups.ChatMessageSegment(
+                pr['title'],
+                hangups.SegmentType.LINK,
+                link_target=pr['html_url']
+            )
+        )
+
         segments.append(hangups.ChatMessageSegment(' by '))
-        segments.append(hangups.ChatMessageSegment(pr['user']['login'], hangups.SegmentType.LINK, link_target=pr['user']['url']))
+
+        segments.append(
+            hangups.ChatMessageSegment(
+                pr['user']['login'],
+                hangups.SegmentType.LINK,
+                link_target=pr['user']['url']
+            )
+        )
 
     bot.send_message_segments(event.conv, segments)
