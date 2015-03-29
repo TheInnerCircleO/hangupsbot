@@ -428,22 +428,26 @@ def get_json(url):
         return json_result.status_code
 
 
-def get_topic(seed):
+def get_random_topic(seed):
+
     # Safe it
     re.sub(r'\W+', '', seed)
+
     url = 'http://www.reddit.com/search.json?q=%s' % seed
 
     try:
-        obj_result = get_json(url)
-        available_results = len(obj_result['data']['children'])-1
-        index_result = min([available_results, 5])
-        result_index = randint(0, index_result)
-        rerep = re.compile(re.escape('reddit'), re.IGNORECASE)
-        line = rerep.sub(
-            'The Inner Circle',
-            obj_result['data']['children'][result_index]['data']['title'])
-        return line
+
+        obj_results = get_json(url)
+
+        total_results = len(obj_results['data']['children']) - 1
+        rand_index = randint(0, min([total_results, 5]))
+
+        topic_obj = obj_results['data']['children'][rand_index]
+
+        return topic_obj
+
     except:
+
         return "Hmmm."
 
 
@@ -480,9 +484,28 @@ def btc(bot, event, *args):
 
 @command.register
 def thoughts(bot, event, *args):
+
     seed = ' '.join(args)
-    result = get_topic(seed)
-    bot.parse_and_send_segments(event.conv, result)
+    topic = get_random_topic(seed)
+
+    rerep = re.compile(re.escape('reddit'), re.IGNORECASE)
+
+    title = rerep.sub(
+        'The Inner Circle',
+        topic['data']['title']
+    )
+
+    link = 'https://www.reddit.com{}'.format(topic['data']['permalink'])
+
+    segments = [
+        hangups.ChatMessageSegment(
+            title,
+            hangups.SegmentType.LINK,
+            link_target=link
+        )
+    ]
+
+    bot.send_message_segments(event.conv, segments)
 
 
 @command.register
