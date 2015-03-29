@@ -495,11 +495,13 @@ def thoughts(bot, event, *args):
         topic['data']['title']
     )
 
+    link = 'https://www.reddit.com{}'.format(topic['data']['permalink'])
+
     segments = [
         hangups.ChatMessageSegment(
             title,
             hangups.SegmentType.LINK,
-            link_target=topic['data']['url']
+            link_target=link
         )
     ]
 
