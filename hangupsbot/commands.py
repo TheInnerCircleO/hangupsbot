@@ -486,7 +486,7 @@ def stock(bot, event, *args):
         data = json.loads(raw_data.text[3:])
         for i in data:
             ticker_link = hangups.ChatMessageSegment(
-                i['t'], 
+                i['t'],
                 hangups.SegmentType.LINK,
                 link_target="https://www.google.com/finance?q=" + i['t']
             )
