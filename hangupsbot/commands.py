@@ -473,9 +473,10 @@ def get_random_topic(seed):
 @command.register
 def stock(bot, event, *args):
     """
-    /bot stock ticker1 tickerN
+    /bot stock ticker1 ticker2 tickerN
     displays current price for tickers
     """
+    result = []
     try:
         tickers = ','.join(list(args))
         raw_data = requests.get(
@@ -483,9 +484,17 @@ def stock(bot, event, *args):
             tickers)
         # Cant use get_json because of 3 invalid chars
         data = json.loads(raw_data.text[3:])
-        result = '\n'.join([i['t'] + ": " + i['l'] for i in data])
+        for i in data:
+            ticker_link = hangups.ChatMessageSegment(
+                i['t'], 
+                hangups.SegmentType.LINK,
+                link_target="https://www.google.com/finance?q=" + i['t']
+            )
+            result.append(ticker_link)
+            result.append(': ' + i['l'] + ' (' + i['cp'] + '%)')
+            result.append(hangups.ChatMessageSegment('\n', hangups.SegmentType.LINE_BREAK))
     except:
-        result = "Dankest memes cannot be delivered"
+        result = "Whatchoo tryna do? check urself."
 
     bot.parse_and_send_segments(event.conv, result)
 
