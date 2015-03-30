@@ -492,7 +492,12 @@ def stock(bot, event, *args):
             )
             result.append(ticker_link)
             result.append(': ' + i['l'] + ' (' + i['cp'] + '%)')
-            result.append(hangups.ChatMessageSegment('\n', hangups.SegmentType.LINE_BREAK))
+            result.append(
+                hangups.ChatMessageSegment(
+                    '\n',
+                    hangups.SegmentType.LINE_BREAK
+                )
+            )
     except:
         result = "Whatchoo tryna do? check urself."
 
