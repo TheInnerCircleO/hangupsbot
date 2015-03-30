@@ -491,8 +491,7 @@ def stock(bot, event, *args):
                 link_target="https://www.google.com/finance?q=" + i['t']
             )
             result.append(ticker_link)
-            #result.append(': ' + i['l'] + ' (' + i['cp'] + '%)')
-            results.append(
+            result.append(
                 hangups.ChatMessageSegment(
                     ': {} | {} ({}%)'.format(i['l'], i['c'], i['cp'])
                 )
