@@ -391,7 +391,10 @@ def dilbert(bot, event, *args):
             valid_arg = re.match('\d{4}-\d{2}-\d{2}', args[0])
 
             if valid_arg is None:
-                bot.send_message(event.conv, 'Invalid argument: {}'.format(args[0]))
+                bot.send_message(
+                    event.conv,
+                    'Invalid argument: {}'.format(args[0])
+                )
                 return
 
             dilbert_modifier = args[0]
