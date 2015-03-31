@@ -5,8 +5,7 @@ import random
 import re
 import requests
 import time
-
-from datetime import date as datetime
+import datetime
 
 from hangups.ui.utils import get_conv_name
 from hangupsbot.utils import text_to_segments
@@ -352,22 +351,16 @@ def config(bot, event, cmd=None, *args):
     bot.send_message_segments(event.conv, segments)
 
 
-def _random_date(start, end, format):
-    stime = time.mktime(time.strptime(start, format))
-    etime = time.mktime(time.strptime(end, format))
-    ptime = stime + random.random() * (etime - stime)
-    return time.strftime(format, time.localtime(ptime))
-
-
 @command.register
 def dilbert(bot, event, *args):
     """/bot dilbert [YYYY-MM-DD | random]
     NOTE: First dilbert 1989-04-16"""
 
     dilbert_date_format = '%Y-%m-%d'
-    today = datetime.today().strftime(dilbert_date_format)
 
-    dilbert_modifier = today
+    today = datetime.date.today()
+
+    dilbert_modifier = today.strftime(dilbert_date_format)
 
     segments = [
         hangups.ChatMessageSegment(
@@ -378,26 +371,59 @@ def dilbert(bot, event, *args):
 
     if args:
 
+        first_timestamp = int(
+            datetime.datetime.strptime(
+                '1989-04-16',
+                dilbert_date_format
+            ).strftime('%s')
+        )
+
+        today_timestamp = int(
+            today.strftime('%s')
+        )
+
         if args[0] == 'random':
 
-            dilbert_modifier = _random_date(
-                '1989-04-16',
-                today,
-                dilbert_date_format
-            )
+            random_timestamp = randint(first_timestamp, today_timestamp)
+
+            dilbert_modifier = datetime.date.fromtimestamp(
+                random_timestamp
+            ).strftime(dilbert_date_format)
 
         else:
 
-            valid_arg = re.match('\d{4}-\d{2}-\d{2}', args[0])
+            try:
 
-            if valid_arg is None:
+                timestamp = int(
+                    datetime.datetime.strptime(
+                        args[0],
+                        dilbert_date_format
+                    ).strftime('%s')
+                )
+
+            except:
+
                 bot.send_message(
                     event.conv,
-                    'Invalid argument: {}'.format(args[0])
+                    'Invalid date string: {}'.format(args[0])
                 )
+
                 return
 
-            dilbert_modifier = args[0]
+            date_range = range(first_timestamp, today_timestamp)
+
+            if timestamp not in date_range:
+
+                bot.send_message(
+                    event.conv,
+                    'Date out of range: {}'.format(args[0])
+                )
+
+                return
+
+            dilbert_modifier = datetime.date.fromtimestamp(
+                timestamp
+            ).strftime(dilbert_date_format)
 
     link = 'http://dilbert.com/strip/{}'.format(dilbert_modifier)
 
