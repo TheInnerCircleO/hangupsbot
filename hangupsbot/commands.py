@@ -467,7 +467,7 @@ def get_random_topic(seed):
 
     except:
 
-        return "Hmmm."
+        return []
 
 
 @command.register
@@ -523,27 +523,33 @@ def btc(bot, event, *args):
 @command.register
 def thoughts(bot, event, *args):
 
-    seed = ' '.join(args)
-    topic = get_random_topic(seed)
+    try:
 
-    rerep = re.compile(re.escape('reddit'), re.IGNORECASE)
+        seed = ' '.join(args)
+        topic = get_random_topic(seed)
 
-    title = rerep.sub(
-        'The Inner Circle',
-        topic['data']['title']
-    )
+        rerep = re.compile(re.escape('reddit'), re.IGNORECASE)
 
-    link = 'https://www.reddit.com{}'.format(topic['data']['permalink'])
-
-    segments = [
-        hangups.ChatMessageSegment(
-            title,
-            hangups.SegmentType.LINK,
-            link_target=link
+        title = rerep.sub(
+            'The Inner Circle',
+            topic['data']['title']
         )
-    ]
 
-    bot.send_message_segments(event.conv, segments)
+        link = 'https://www.reddit.com{}'.format(topic['data']['permalink'])
+
+        segments = [
+            hangups.ChatMessageSegment(
+                title,
+                hangups.SegmentType.LINK,
+                link_target=link
+            )
+        ]
+
+        bot.send_message_segments(event.conv, segments)
+
+    except:
+
+        bot.send_message(event.conv, 'Hmmm.')
 
 
 @command.register
