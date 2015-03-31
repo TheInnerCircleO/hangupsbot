@@ -502,7 +502,7 @@ def stock(bot, event, *args):
             )
     except Exception as e:
         return bot.parse_and_send_segments(
-            event.conv, 
+            event.conv,
             "Ticker probably doesn't exist: {}".format(str(e))
         )
 
