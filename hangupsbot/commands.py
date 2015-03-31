@@ -476,36 +476,34 @@ def stock(bot, event, *args):
     /bot stock ticker1 ticker2 tickerN
     displays current price for tickers
     """
-    result = []
+    segments = []
+    tickers = ','.join(list(args))
+    raw_data = requests.get(
+        'http://finance.google.com/finance/info?client=ig&q=' +
+        tickers)
     try:
-        tickers = ','.join(list(args))
-        raw_data = requests.get(
-            'http://finance.google.com/finance/info?client=ig&q=' +
-            tickers)
         # Cant use get_json because of 3 invalid chars
         data = json.loads(raw_data.text[3:])
         for i in data:
-            ticker_link = hangups.ChatMessageSegment(
-                i['t'],
+            stock_link = 'https://www.google.com/finance?q={}'.format(i['t'])
+            link_segment = hangups.ChatMessageSegment(
+                '{:<6}'.format(i['t']),
                 hangups.SegmentType.LINK,
-                link_target="https://www.google.com/finance?q=" + i['t']
+                link_target=stock_link
             )
-            result.append(ticker_link)
-            result.append(
-                hangups.ChatMessageSegment(
-                    ': {} | {} ({}%)'.format(i['l'], i['c'], i['cp'])
-                )
-            )
-            result.append(
+            text = ': {:<5} | {:^4} ({}%)'.format(i['l'], i['c'], i['cp'])
+            segments.append(link_segment)
+            segments.append(hangups.ChatMessageSegment(text))
+            segments.append(
                 hangups.ChatMessageSegment(
                     '\n',
                     hangups.SegmentType.LINE_BREAK
                 )
             )
-    except:
-        result = "Whatchoo tryna do? check urself."
+    except Exception as e:
+        return bot.parse_and_send_segments(e)
 
-    bot.parse_and_send_segments(event.conv, result)
+    bot.send_message_segments(event.conv, segments)
 
 
 @command.register
