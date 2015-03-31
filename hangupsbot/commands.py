@@ -4,7 +4,6 @@ import json
 import random
 import re
 import requests
-import time
 import datetime
 
 from hangups.ui.utils import get_conv_name
