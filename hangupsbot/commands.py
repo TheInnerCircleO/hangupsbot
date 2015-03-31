@@ -673,6 +673,9 @@ def eightball(bot, event, *args):
     /bot eightball [question]
     """
 
+    if not args:
+        bot.send_message(event.conv, 'What is your question?')
+
     answers = [
         "It is certain",
         "It is decidedly so",
